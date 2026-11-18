@@ -1,0 +1,6 @@
+@PropBuild.Api_HostAddress = http://localhost:5027
+
+GET {{PropBuild.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -1,0 +1,15 @@
+# .NET build artifacts
+**/bin/
+**/obj/
+
+# Frontend dependencies and build outputs
+frontend/node_modules/
+frontend/dist/
+
+# Local environment and IDE files
+.env
+.env.*
+!.env.example
+.vs/
+*.user
+*.suo

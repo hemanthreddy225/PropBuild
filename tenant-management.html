@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tenant Management</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f5f2ed;
+  --surface: #faf8f5;
+  --surface2: #ede9e2;
+  --ink: #1c1a17;
+  --ink2: #4a4640;
+  --ink3: #9a9590;
+  --gold: #c8973a;
+  --gold-light: #f0e4c8;
+  --gold-bg: #fdf6e8;
+  --green: #2e7d5e;
+  --green-light: #d4ede5;
+  --red: #b84040;
+  --red-light: #f5dede;
+  --blue: #2c5f8a;
+  --blue-light: #dceaf5;
+  --border: rgba(28,26,23,0.1);
+  --border2: rgba(28,26,23,0.18);
+  --shadow: 0 2px 16px rgba(28,26,23,0.07);
+  --shadow-lg: 0 8px 40px rgba(28,26,23,0.12);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+  font-size: 14px;
+}
+h1,h2,h3,.serif { font-family: 'Playfair Display', serif; }
+
+/* ── Shell ── */
+.shell { display: grid; grid-template-columns: 260px 1fr; min-height: 100vh; }
+
+/* ── Sidebar ── */
+.sidebar {
+  background: var(--ink);
+  color: var(--surface);
+  padding: 0;
+  display: flex; flex-direction: column;
+  position: sticky; top: 0; height: 100vh; overflow-y: auto;
+}
+.sb-head {
+  padding: 28px 24px 22px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+.sb-logo { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; color: #fff; line-height: 1.2; }
+.sb-sub { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 4px; letter-spacing: 0.08em; text-transform: uppercase; }
+
+.sb-section { padding: 20px 16px 8px; }
+.sb-label { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.3); font-weight: 500; padding: 0 8px 8px; }
+.sb-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border-radius: 8px; cursor: pointer;
+  font-size: 13px; color: rgba(255,255,255,0.55);
+  transition: all 0.15s;
+}
+.sb-item:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.85); }
+.sb-item.active { background: rgba(200,151,58,0.2); color: var(--gold); }
+.sb-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; opacity: 0.6; }
+.sb-badge {
+  margin-left: auto; font-size: 10px; font-weight: 600;
+  background: rgba(200,151,58,0.25); color: var(--gold);
+  padding: 2px 7px; border-radius: 20px;
+}
+.sb-badge-red { background: rgba(184,64,64,0.25); color: #e87070; }
+.sb-badge-green { background: rgba(46,125,94,0.25); color: #5ecba0; }
+
+/* ── Main ── */
+.main { background: var(--bg); overflow-y: auto; }
+.topbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 18px 36px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 10;
+}
+.page-title { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; }
+.page-sub { font-size: 12px; color: var(--ink3); margin-top: 2px; }
+.btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 10px 18px; border-radius: 8px; border: none;
+  font-family: 'DM Sans', sans-serif; font-weight: 500; font-size: 13px;
+  cursor: pointer; transition: all 0.15s;
+}
+.btn-gold { background: var(--gold); color: #fff; }
+.btn-gold:hover { background: #d4a040; }
+.btn-outline { background: transparent; border: 1px solid var(--border2); color: var(--ink2); }
+.btn-outline:hover { background: var(--surface2); }
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+.btn-danger { background: var(--red-light); color: var(--red); border: none; }
+.btn-danger:hover { background: #f0cccc; }
+
+/* ── Content ── */
+.content { padding: 28px 36px; }
+
+/* ── Stats row ── */
+.stats-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 28px; }
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px 22px;
+  position: relative; overflow: hidden;
+}
+.stat-accent { position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 14px 14px 0 0; }
+.acc-gold { background: var(--gold); }
+.acc-green { background: var(--green); }
+.acc-red { background: var(--red); }
+.acc-blue { background: var(--blue); }
+.stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.09em; color: var(--ink3); font-weight: 500; margin-bottom: 10px; }
+.stat-value { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 700; }
+.stat-sub { font-size: 11px; color: var(--ink3); margin-top: 6px; }
+
+/* ── Filters ── */
+.filters-row { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+.filter-pill {
+  padding: 7px 16px; border-radius: 20px; border: 1px solid var(--border2);
+  background: var(--surface); font-size: 12px; font-weight: 500; cursor: pointer;
+  transition: all 0.15s; color: var(--ink2);
+}
+.filter-pill.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+.filter-pill:hover:not(.active) { background: var(--surface2); }
+.search-box {
+  margin-left: auto;
+  display: flex; align-items: center; gap: 8px;
+  background: var(--surface); border: 1px solid var(--border2);
+  border-radius: 8px; padding: 8px 14px;
+}
+.search-box input {
+  border: none; background: transparent; outline: none;
+  font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--ink);
+  width: 180px;
+}
+.search-box input::placeholder { color: var(--ink3); }
+
+/* ── Tenant list ── */
+.tenant-list { display: flex; flex-direction: column; gap: 12px; }
+.tenant-row {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  display: grid;
+  grid-template-columns: 52px 1fr 180px 150px 140px 130px auto;
+  align-items: center;
+  gap: 0;
+  cursor: pointer;
+  transition: box-shadow 0.15s, border-color 0.15s;
+  overflow: hidden;
+}
+.tenant-row:hover { border-color: var(--border2); box-shadow: var(--shadow); }
+.tenant-row.selected { border-color: var(--gold); box-shadow: 0 0 0 2px var(--gold-light); }
+
+.tr-avatar {
+  width: 52px; height: 52px; display: flex; align-items: center; justify-content: center;
+  background: var(--gold-bg); align-self: stretch;
+  font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; color: var(--gold);
+}
+.tr-info { padding: 14px 16px; }
+.tr-name { font-weight: 500; font-size: 14px; }
+.tr-prop { font-size: 12px; color: var(--ink3); margin-top: 2px; }
+.tr-lease { padding: 14px 16px; }
+.tr-lease-dates { font-size: 12px; color: var(--ink2); }
+.tr-lease-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--ink3); margin-bottom: 3px; }
+.tr-rent { padding: 14px 16px; }
+.tr-rent-amount { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 600; }
+.tr-rent-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--ink3); margin-bottom: 3px; }
+.tr-status { padding: 14px 16px; }
+.status-pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 20px;
+  letter-spacing: 0.03em;
+}
+.s-active { background: var(--green-light); color: var(--green); }
+.s-overdue { background: var(--red-light); color: var(--red); }
+.s-expiring { background: var(--gold-bg); color: var(--gold); }
+.s-vacating { background: var(--blue-light); color: var(--blue); }
+.tr-deposit { padding: 14px 16px; }
+.tr-actions { padding: 14px 16px; display: flex; gap: 8px; }
+
+/* ── Detail Panel ── */
+.detail-overlay {
+  position: fixed; inset: 0; background: rgba(28,26,23,0.5);
+  z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.25s;
+  display: flex; justify-content: flex-end;
+}
+.detail-overlay.open { opacity: 1; pointer-events: all; }
+.detail-panel {
+  width: 480px; height: 100vh; overflow-y: auto;
+  background: var(--surface);
+  transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+  display: flex; flex-direction: column;
+}
+.detail-overlay.open .detail-panel { transform: translateX(0); }
+.dp-head {
+  padding: 24px 28px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: flex-start; justify-content: space-between;
+  background: var(--ink); color: #fff;
+}
+.dp-avatar {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: rgba(200,151,58,0.25); display: flex; align-items: center; justify-content: center;
+  font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; color: var(--gold);
+  flex-shrink: 0;
+}
+.dp-name { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; color: #fff; }
+.dp-prop { font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 3px; }
+.dp-close {
+  background: rgba(255,255,255,0.1); border: none; color: rgba(255,255,255,0.7);
+  width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-size: 16px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  transition: all 0.15s;
+}
+.dp-close:hover { background: rgba(255,255,255,0.2); color: #fff; }
+.dp-tabs { display: flex; border-bottom: 1px solid var(--border); background: var(--surface); }
+.dp-tab {
+  padding: 12px 20px; font-size: 13px; font-weight: 500; cursor: pointer;
+  color: var(--ink3); border-bottom: 2px solid transparent; transition: all 0.15s;
+}
+.dp-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+.dp-tab:hover:not(.active) { color: var(--ink2); }
+.dp-body { padding: 24px 28px; flex: 1; }
+
+.info-section { margin-bottom: 24px; }
+.info-section-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink3); font-weight: 600; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+.info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.info-item label { font-size: 11px; color: var(--ink3); display: block; margin-bottom: 4px; }
+.info-item .val { font-size: 14px; font-weight: 500; color: var(--ink); }
+
+.lease-timeline {
+  background: var(--bg); border-radius: 12px; padding: 16px 18px;
+  margin-bottom: 20px;
+}
+.lt-bar { position: relative; height: 8px; background: var(--surface2); border-radius: 4px; margin: 10px 0; }
+.lt-fill { position: absolute; left: 0; top: 0; height: 100%; border-radius: 4px; background: var(--green); transition: width 0.4s; }
+.lt-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--ink3); }
+
+/* Payment history */
+.payment-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 0; border-bottom: 1px solid var(--border);
+}
+.payment-row:last-child { border-bottom: none; }
+.pay-month { font-weight: 500; font-size: 14px; }
+.pay-date { font-size: 12px; color: var(--ink3); margin-top: 2px; }
+.pay-amount { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 600; }
+.pay-badge {
+  font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 20px;
+}
+.p-paid { background: var(--green-light); color: var(--green); }
+.p-late { background: var(--red-light); color: var(--red); }
+.p-pending { background: var(--gold-bg); color: var(--gold); }
+
+/* Docs */
+.doc-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px; border-radius: 10px; border: 1px solid var(--border);
+  margin-bottom: 8px; background: var(--bg);
+}
+.doc-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.doc-name { font-size: 13px; font-weight: 500; }
+.doc-meta { font-size: 11px; color: var(--ink3); margin-top: 2px; }
+.doc-dl { margin-left: auto; font-size: 12px; color: var(--blue); cursor: pointer; }
+
+/* ── Add/Edit Modal ── */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(28,26,23,0.6);
+  z-index: 200; display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.2s;
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal {
+  background: var(--surface); border-radius: 18px;
+  padding: 32px 36px; width: 540px; max-width: 95vw; max-height: 90vh; overflow-y: auto;
+  transform: translateY(24px); transition: transform 0.25s;
+  box-shadow: var(--shadow-lg);
+}
+.modal-overlay.open .modal { transform: translateY(0); }
+.modal-title { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+.modal-sub { font-size: 13px; color: var(--ink3); margin-bottom: 24px; }
+.form-section { margin-bottom: 22px; }
+.form-section-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink3); font-weight: 600; margin-bottom: 12px; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.form-row { margin-bottom: 14px; }
+.form-row label, .form-grid > div > label { display: block; font-size: 12px; color: var(--ink2); margin-bottom: 5px; font-weight: 500; }
+.form-row input, .form-row select, .form-row textarea,
+.form-grid input, .form-grid select {
+  width: 100%; padding: 10px 14px;
+  background: var(--bg); border: 1px solid var(--border2); border-radius: 8px;
+  font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--ink);
+  outline: none; transition: border-color 0.15s;
+}
+.form-row input:focus, .form-row select:focus, .form-row textarea:focus,
+.form-grid input:focus, .form-grid select:focus { border-color: var(--gold); }
+.form-row textarea { resize: vertical; min-height: 80px; }
+.modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px; }
+.modal-close-btn { position: absolute; top:0; right:0; }
+
+/* ── Alert/Notice ── */
+.notice {
+  display: flex; align-items: flex-start; gap: 12px;
+  background: var(--gold-bg); border: 1px solid rgba(200,151,58,0.3);
+  border-radius: 10px; padding: 14px 16px; margin-bottom: 20px;
+}
+.notice-icon { font-size: 18px; flex-shrink: 0; }
+.notice-title { font-weight: 500; font-size: 13px; color: var(--ink); }
+.notice-body { font-size: 12px; color: var(--ink2); margin-top: 3px; }
+
+/* ── Renewal tracker ── */
+.renewal-card {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--bg); border-radius: 10px; padding: 14px 16px; margin-bottom: 10px;
+  border: 1px solid var(--border);
+}
+.rc-days { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; }
+.rc-label { font-size: 11px; color: var(--ink3); }
+.rc-name { font-weight: 500; }
+.rc-prop { font-size: 12px; color: var(--ink3); }
+
+.empty-state { text-align: center; padding: 60px 20px; color: var(--ink3); }
+.empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
+.empty-title { font-family: 'Playfair Display', serif; font-size: 18px; color: var(--ink2); margin-bottom: 8px; }
+
+/* Pages */
+.page { display: none; }
+.page.visible { display: block; }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sb-head">
+      <div class="sb-logo">PropBuild</div>
+      <div class="sb-sub">Tenant Management</div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-label">Overview</div>
+      <div class="sb-item active" onclick="showPage('tenants',this)">
+        <span class="sb-dot"></span> All Tenants <span class="sb-badge" id="total-badge">4</span>
+      </div>
+      <div class="sb-item" onclick="showPage('renewals',this)">
+        <span class="sb-dot"></span> Lease Renewals <span class="sb-badge" id="renew-badge">2</span>
+      </div>
+      <div class="sb-item" onclick="showPage('payments',this)">
+        <span class="sb-dot"></span> Payment Status <span class="sb-badge sb-badge-red" id="overdue-badge">1</span>
+      </div>
+      <div class="sb-item" onclick="showPage('vacating',this)">
+        <span class="sb-dot"></span> Vacating Soon <span class="sb-badge sb-badge-green" id="vac-badge">1</span>
+      </div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-label">Properties</div>
+      <div class="sb-item" onclick="filterByProp('all')">
+        <span class="sb-dot"></span> All Properties
+      </div>
+      <div class="sb-item" id="prop-filter-1" onclick="filterByProp('Koramangala 4B Flat')">
+        <span class="sb-dot"></span> Koramangala Flat
+      </div>
+      <div class="sb-item" id="prop-filter-2" onclick="filterByProp('Whitefield Villa')">
+        <span class="sb-dot"></span> Whitefield Villa
+      </div>
+      <div class="sb-item" id="prop-filter-3" onclick="filterByProp('Indiranagar 2BHK')">
+        <span class="sb-dot"></span> Indiranagar 2BHK
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+
+    <!-- Page: All Tenants -->
+    <div id="page-tenants" class="page visible">
+      <div class="topbar">
+        <div>
+          <div class="page-title">Tenants</div>
+          <div class="page-sub" id="tenant-topbar-sub">4 tenants across 3 properties</div>
+        </div>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-outline" onclick="showPage('renewals')">Renewals</button>
+          <button class="btn btn-gold" onclick="openAddTenant()">+ Add Tenant</button>
+        </div>
+      </div>
+
+      <div class="content">
+        <!-- Stats -->
+        <div class="stats-row" id="stats-row"></div>
+
+        <!-- Overdue notice -->
+        <div class="notice" id="overdue-notice" style="display:none">
+          <span class="notice-icon">⚠️</span>
+          <div>
+            <div class="notice-title" id="notice-title">Rent overdue</div>
+            <div class="notice-body" id="notice-body"></div>
+          </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters-row">
+          <span class="filter-pill active" onclick="setFilter('all',this)">All</span>
+          <span class="filter-pill" onclick="setFilter('active',this)">Active</span>
+          <span class="filter-pill" onclick="setFilter('overdue',this)">Overdue</span>
+          <span class="filter-pill" onclick="setFilter('expiring',this)">Expiring Soon</span>
+          <span class="filter-pill" onclick="setFilter('vacating',this)">Vacating</span>
+          <div class="search-box">
+            <span style="color:var(--ink3);font-size:14px">🔍</span>
+            <input type="text" id="search-input" placeholder="Search tenants…" oninput="renderTenants()">
+          </div>
+        </div>
+
+        <!-- Tenant List -->
+        <div class="tenant-list" id="tenant-list"></div>
+      </div>
+    </div>
+
+    <!-- Page: Renewals -->
+    <div id="page-renewals" class="page">
+      <div class="topbar">
+        <div><div class="page-title">Lease Renewals</div><div class="page-sub">Upcoming lease expirations</div></div>
+        <button class="btn btn-gold" onclick="showPage('tenants')">← All Tenants</button>
+      </div>
+      <div class="content">
+        <div id="renewals-list"></div>
+      </div>
+    </div>
+
+    <!-- Page: Payments -->
+    <div id="page-payments" class="page">
+      <div class="topbar">
+        <div><div class="page-title">Payment Status</div><div class="page-sub">Monthly rent collection overview</div></div>
+        <button class="btn btn-gold" onclick="showPage('tenants')">← All Tenants</button>
+      </div>
+      <div class="content" id="payments-content"></div>
+    </div>
+
+    <!-- Page: Vacating -->
+    <div id="page-vacating" class="page">
+      <div class="topbar">
+        <div><div class="page-title">Vacating Soon</div><div class="page-sub">Tenants who have given notice</div></div>
+        <button class="btn btn-gold" onclick="showPage('tenants')">← All Tenants</button>
+      </div>
+      <div class="content" id="vacating-content"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Detail Panel -->
+<div class="detail-overlay" id="detail-overlay" onclick="closeDetail(event)">
+  <div class="detail-panel" id="detail-panel">
+    <div class="dp-head" id="dp-head"></div>
+    <div class="dp-tabs" id="dp-tabs"></div>
+    <div class="dp-body" id="dp-body"></div>
+  </div>
+</div>
+
+<!-- Add/Edit Modal -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">Add New Tenant</div>
+    <div class="modal-sub" id="modal-sub">Fill in the tenant and lease details</div>
+
+    <div class="form-section">
+      <div class="form-section-title">Personal Details</div>
+      <div class="form-grid">
+        <div><label>Full Name</label><input id="f-name" placeholder="e.g. Rahul Sharma" /></div>
+        <div><label>Phone</label><input id="f-phone" placeholder="+91 98xxx xxxxx" /></div>
+        <div><label>Email</label><input id="f-email" placeholder="rahul@email.com" /></div>
+        <div><label>Occupation</label><input id="f-occ" placeholder="e.g. Software Engineer" /></div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-section-title">Lease Details</div>
+      <div class="form-grid">
+        <div><label>Property</label>
+          <select id="f-prop">
+            <option>Koramangala 4B Flat</option>
+            <option>Whitefield Villa</option>
+            <option>Indiranagar 2BHK</option>
+          </select>
+        </div>
+        <div><label>Monthly Rent (₹)</label><input id="f-rent" type="number" placeholder="28000" /></div>
+        <div><label>Lease Start</label><input id="f-start" type="date" /></div>
+        <div><label>Lease End</label><input id="f-end" type="date" /></div>
+        <div><label>Security Deposit (₹)</label><input id="f-deposit" type="number" placeholder="56000" /></div>
+        <div><label>Rent Due Day</label>
+          <select id="f-due"><option>1st</option><option>5th</option><option>10th</option><option>15th</option></select>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-section-title">Emergency Contact</div>
+      <div class="form-grid">
+        <div><label>Name</label><input id="f-ec-name" placeholder="Contact name" /></div>
+        <div><label>Phone</label><input id="f-ec-phone" placeholder="+91 98xxx xxxxx" /></div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-section-title">Notes</div>
+      <div class="form-row"><textarea id="f-notes" placeholder="Any additional notes about the tenant or lease…"></textarea></div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-gold" onclick="saveTenant()">Save Tenant</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+const state = {
+  filter: 'all',
+  editId: null,
+  tenants: [
+    {
+      id: 1,
+      name: 'Arjun Mehta', phone: '+91 98450 12345', email: 'arjun.mehta@gmail.com',
+      occupation: 'Senior Engineer, Infosys',
+      property: 'Koramangala 4B Flat',
+      rent: 28000, deposit: 56000,
+      leaseStart: '2024-04-01', leaseEnd: '2026-03-31',
+      dueDay: '1st', status: 'active',
+      ec: { name: 'Sunita Mehta', phone: '+91 94450 12345' },
+      notes: 'Long-term tenant. Very punctual with payments.',
+      payments: [
+        { month: 'Mar 2026', date: '01 Mar 2026', amount: 28000, status: 'paid' },
+        { month: 'Feb 2026', date: '01 Feb 2026', amount: 28000, status: 'paid' },
+        { month: 'Jan 2026', date: '02 Jan 2026', amount: 28000, status: 'late' },
+        { month: 'Dec 2025', date: '01 Dec 2025', amount: 28000, status: 'paid' },
+        { month: 'Nov 2025', date: '01 Nov 2025', amount: 28000, status: 'paid' },
+        { month: 'Oct 2025', date: '01 Oct 2025', amount: 28000, status: 'paid' },
+      ],
+      docs: [
+        { name: 'Lease Agreement', type: '📄', size: '1.2 MB', date: 'Apr 2024' },
+        { name: 'Aadhaar Card', type: '🪪', size: '0.4 MB', date: 'Apr 2024' },
+        { name: 'Police Verification', type: '🔒', size: '0.8 MB', date: 'Apr 2024' },
+      ]
+    },
+    {
+      id: 2,
+      name: 'Priya Nair', phone: '+91 97890 54321', email: 'priya.nair@hotmail.com',
+      occupation: 'Marketing Manager, Flipkart',
+      property: 'Whitefield Villa',
+      rent: 45000, deposit: 90000,
+      leaseStart: '2023-06-15', leaseEnd: '2026-06-14',
+      dueDay: '5th', status: 'active',
+      ec: { name: 'Ramesh Nair', phone: '+91 94890 54321' },
+      notes: 'Family of 4. Excellent tenant. Signed 3-year lease.',
+      payments: [
+        { month: 'Mar 2026', date: '05 Mar 2026', amount: 45000, status: 'paid' },
+        { month: 'Feb 2026', date: '05 Feb 2026', amount: 45000, status: 'paid' },
+        { month: 'Jan 2026', date: '05 Jan 2026', amount: 45000, status: 'paid' },
+        { month: 'Dec 2025', date: '05 Dec 2025', amount: 45000, status: 'paid' },
+        { month: 'Nov 2025', date: '05 Nov 2025', amount: 45000, status: 'paid' },
+        { month: 'Oct 2025', date: '09 Oct 2025', amount: 45000, status: 'late' },
+      ],
+      docs: [
+        { name: 'Lease Agreement', type: '📄', size: '1.4 MB', date: 'Jun 2023' },
+        { name: 'Passport Copy', type: '🪪', size: '0.5 MB', date: 'Jun 2023' },
+      ]
+    },
+    {
+      id: 3,
+      name: 'Vikram Joshi', phone: '+91 99001 67890', email: 'vikram.j@yahoo.com',
+      occupation: 'Freelance Consultant',
+      property: 'Indiranagar 2BHK',
+      rent: 22000, deposit: 44000,
+      leaseStart: '2025-03-01', leaseEnd: '2026-04-30',
+      dueDay: '1st', status: 'overdue',
+      ec: { name: 'Kavita Joshi', phone: '+91 98001 67890' },
+      notes: 'Missed March payment. Sent reminder on 8 Mar.',
+      payments: [
+        { month: 'Mar 2026', date: '—', amount: 22000, status: 'pending' },
+        { month: 'Feb 2026', date: '01 Feb 2026', amount: 22000, status: 'paid' },
+        { month: 'Jan 2026', date: '04 Jan 2026', amount: 22000, status: 'late' },
+        { month: 'Dec 2025', date: '01 Dec 2025', amount: 22000, status: 'paid' },
+        { month: 'Nov 2025', date: '01 Nov 2025', amount: 22000, status: 'paid' },
+        { month: 'Oct 2025', date: '01 Oct 2025', amount: 22000, status: 'paid' },
+      ],
+      docs: [
+        { name: 'Lease Agreement', type: '📄', size: '1.1 MB', date: 'Mar 2025' },
+        { name: 'Pan Card', type: '🪪', size: '0.3 MB', date: 'Mar 2025' },
+      ]
+    },
+    {
+      id: 4,
+      name: 'Deepa Krishnan', phone: '+91 96500 11223', email: 'deepa.k@gmail.com',
+      occupation: 'Doctor, Manipal Hospital',
+      property: 'Indiranagar 2BHK',
+      rent: 24000, deposit: 48000,
+      leaseStart: '2025-07-01', leaseEnd: '2026-06-30',
+      dueDay: '5th', status: 'expiring',
+      ec: { name: 'Suresh Krishnan', phone: '+91 94500 11223' },
+      notes: 'Wants to renew for another year. Negotiating 5% hike.',
+      payments: [
+        { month: 'Mar 2026', date: '05 Mar 2026', amount: 24000, status: 'paid' },
+        { month: 'Feb 2026', date: '05 Feb 2026', amount: 24000, status: 'paid' },
+        { month: 'Jan 2026', date: '05 Jan 2026', amount: 24000, status: 'paid' },
+        { month: 'Dec 2025', date: '05 Dec 2025', amount: 24000, status: 'paid' },
+        { month: 'Nov 2025', date: '05 Nov 2025', amount: 24000, status: 'paid' },
+        { month: 'Oct 2025', date: '05 Oct 2025', amount: 24000, status: 'paid' },
+      ],
+      docs: [
+        { name: 'Lease Agreement', type: '📄', size: '1.2 MB', date: 'Jul 2025' },
+        { name: 'Medical Registration', type: '📜', size: '0.6 MB', date: 'Jul 2025' },
+        { name: 'Aadhaar Card', type: '🪪', size: '0.4 MB', date: 'Jul 2025' },
+      ]
+    }
+  ]
+};
+
+function fmt(n) { return '₹' + Number(n).toLocaleString('en-IN'); }
+
+function initials(name) {
+  return name.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
+}
+
+function daysUntil(dateStr) {
+  const d = new Date(dateStr), now = new Date();
+  return Math.round((d - now) / (1000*60*60*24));
+}
+
+function leaseProgress(start, end) {
+  const s = new Date(start), e = new Date(end), now = new Date();
+  return Math.min(100, Math.max(0, Math.round((now-s)/(e-s)*100)));
+}
+
+function statusLabel(s) {
+  return { active:'Active', overdue:'Overdue', expiring:'Expiring Soon', vacating:'Vacating' }[s] || s;
+}
+function statusClass(s) {
+  return { active:'s-active', overdue:'s-overdue', expiring:'s-expiring', vacating:'s-vacating' }[s] || 's-active';
+}
+
+function getFiltered() {
+  const q = (document.getElementById('search-input')?.value||'').toLowerCase();
+  return state.tenants.filter(t => {
+    const matchFilter = state.filter === 'all' || t.status === state.filter;
+    const matchQ = !q || t.name.toLowerCase().includes(q) || t.property.toLowerCase().includes(q);
+    return matchFilter && matchQ;
+  });
+}
+
+function renderStats() {
+  const t = state.tenants;
+  const totalRent = t.reduce((s,x)=>s+x.rent,0);
+  const overdue = t.filter(x=>x.status==='overdue').length;
+  const expiring = t.filter(x=>x.status==='expiring'||x.status==='vacating').length;
+
+  document.getElementById('stats-row').innerHTML = `
+    <div class="stat-card"><div class="stat-accent acc-gold"></div>
+      <div class="stat-label">Total Tenants</div>
+      <div class="stat-value">${t.length}</div>
+      <div class="stat-sub">${t.filter(x=>x.status==='active').length} active</div>
+    </div>
+    <div class="stat-card"><div class="stat-accent acc-green"></div>
+      <div class="stat-label">Monthly Rent</div>
+      <div class="stat-value">${fmt(totalRent)}</div>
+      <div class="stat-sub">Across ${[...new Set(t.map(x=>x.property))].length} properties</div>
+    </div>
+    <div class="stat-card"><div class="stat-accent acc-red"></div>
+      <div class="stat-label">Overdue Payments</div>
+      <div class="stat-value">${overdue}</div>
+      <div class="stat-sub">${overdue ? fmt(t.filter(x=>x.status==='overdue').reduce((s,x)=>s+x.rent,0)) + ' pending' : 'All clear'}</div>
+    </div>
+    <div class="stat-card"><div class="stat-accent acc-blue"></div>
+      <div class="stat-label">Lease Expiring</div>
+      <div class="stat-value">${expiring}</div>
+      <div class="stat-sub">Next 90 days</div>
+    </div>`;
+
+  const overdues = t.filter(x=>x.status==='overdue');
+  const notice = document.getElementById('overdue-notice');
+  if (overdues.length) {
+    notice.style.display = 'flex';
+    document.getElementById('notice-title').textContent = `${overdues.length} tenant${overdues.length>1?'s':''} with overdue rent`;
+    document.getElementById('notice-body').textContent = overdues.map(x=>`${x.name} (${x.property}) — ${fmt(x.rent)} pending`).join(' · ');
+  } else {
+    notice.style.display = 'none';
+  }
+
+  document.getElementById('total-badge').textContent = t.length;
+  document.getElementById('renew-badge').textContent = t.filter(x=>x.status==='expiring').length;
+  document.getElementById('overdue-badge').textContent = overdues.length;
+  document.getElementById('vac-badge').textContent = t.filter(x=>x.status==='vacating').length;
+}
+
+function renderTenants() {
+  const filtered = getFiltered();
+  document.getElementById('tenant-topbar-sub').textContent = `${state.tenants.length} tenants · showing ${filtered.length}`;
+  if (!filtered.length) {
+    document.getElementById('tenant-list').innerHTML = `<div class="empty-state"><div class="empty-icon">🏠</div><div class="empty-title">No tenants found</div><div style="font-size:13px;margin-top:6px">Try adjusting your search or filter</div></div>`;
+    return;
+  }
+  document.getElementById('tenant-list').innerHTML = filtered.map(t => `
+    <div class="tenant-row" id="tr-${t.id}" onclick="openDetail(${t.id})">
+      <div class="tr-avatar">${initials(t.name)}</div>
+      <div class="tr-info">
+        <div class="tr-name">${t.name}</div>
+        <div class="tr-prop">📍 ${t.property}</div>
+      </div>
+      <div class="tr-lease">
+        <div class="tr-lease-label">Lease Period</div>
+        <div class="tr-lease-dates">${t.leaseStart} → ${t.leaseEnd}</div>
+        <div style="font-size:11px;color:var(--ink3);margin-top:3px">${daysUntil(t.leaseEnd)} days left</div>
+      </div>
+      <div class="tr-rent">
+        <div class="tr-rent-label">Monthly Rent</div>
+        <div class="tr-rent-amount">${fmt(t.rent)}</div>
+        <div style="font-size:11px;color:var(--ink3)">Due: ${t.dueDay}</div>
+      </div>
+      <div class="tr-status">
+        <span class="status-pill ${statusClass(t.status)}">${statusLabel(t.status)}</span>
+      </div>
+      <div class="tr-deposit">
+        <div class="tr-rent-label">Deposit</div>
+        <div style="font-size:13px;font-weight:500">${fmt(t.deposit)}</div>
+      </div>
+      <div class="tr-actions" onclick="event.stopPropagation()">
+        <button class="btn btn-outline btn-sm" onclick="openDetail(${t.id})">View</button>
+        <button class="btn btn-outline btn-sm" onclick="openEditTenant(${t.id})">Edit</button>
+      </div>
+    </div>`).join('');
+}
+
+function renderRenewals() {
+  const expiring = state.tenants.filter(t => {
+    const days = daysUntil(t.leaseEnd);
+    return days > 0 && days <= 180;
+  }).sort((a,b) => new Date(a.leaseEnd) - new Date(b.leaseEnd));
+
+  const el = document.getElementById('renewals-list');
+  if (!expiring.length) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">No renewals due soon</div></div>`;
+    return;
+  }
+  el.innerHTML = `<div style="margin-bottom:20px;font-size:13px;color:var(--ink3)">Leases expiring in the next 6 months</div>` +
+    expiring.map(t => {
+      const days = daysUntil(t.leaseEnd);
+      const urgency = days < 30 ? 'var(--red)' : days < 90 ? 'var(--gold)' : 'var(--green)';
+      return `<div class="renewal-card">
+        <div>
+          <div class="rc-name">${t.name}</div>
+          <div class="rc-prop">📍 ${t.property} · ${fmt(t.rent)}/mo</div>
+          <div style="font-size:12px;color:var(--ink3);margin-top:4px">Expires: ${t.leaseEnd}</div>
+        </div>
+        <div style="text-align:center">
+          <div class="rc-days" style="color:${urgency}">${days}</div>
+          <div class="rc-label">days left</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-outline btn-sm" onclick="openDetail(${t.id})">View</button>
+          <button class="btn btn-gold btn-sm" onclick="alert('Renewal notice sent to ${t.name}!')">Send Notice</button>
+        </div>
+      </div>`;
+    }).join('');
+}
+
+function renderPayments() {
+  const el = document.getElementById('payments-content');
+  const totalExpected = state.tenants.reduce((s,t)=>s+t.rent,0);
+  const overdues = state.tenants.filter(t=>t.status==='overdue');
+  const totalOverdue = overdues.reduce((s,t)=>s+t.rent,0);
+  const collected = totalExpected - totalOverdue;
+
+  el.innerHTML = `
+    <div class="stats-row" style="margin-bottom:24px">
+      <div class="stat-card"><div class="stat-accent acc-green"></div>
+        <div class="stat-label">Collected (Mar)</div><div class="stat-value">${fmt(collected)}</div>
+        <div class="stat-sub">${Math.round(collected/totalExpected*100)}% collection rate</div></div>
+      <div class="stat-card"><div class="stat-accent acc-red"></div>
+        <div class="stat-label">Pending</div><div class="stat-value">${fmt(totalOverdue)}</div>
+        <div class="stat-sub">${overdues.length} tenant${overdues.length!==1?'s':''} overdue</div></div>
+      <div class="stat-card"><div class="stat-accent acc-gold"></div>
+        <div class="stat-label">Total Expected</div><div class="stat-value">${fmt(totalExpected)}</div>
+        <div class="stat-sub">${state.tenants.length} active leases</div></div>
+      <div class="stat-card"><div class="stat-accent acc-blue"></div>
+        <div class="stat-label">Total Deposits Held</div>
+        <div class="stat-value">${fmt(state.tenants.reduce((s,t)=>s+t.deposit,0))}</div>
+        <div class="stat-sub">Refundable</div></div>
+    </div>
+    <div class="section-title" style="font-size:14px;font-weight:600;margin-bottom:14px">March 2026 Status</div>
+    ${state.tenants.map(t => {
+      const lastPay = t.payments[0];
+      const payClass = {paid:'p-paid',late:'p-late',pending:'p-pending'}[lastPay.status] || 'p-pending';
+      return `<div class="payment-row">
+        <div style="display:flex;align-items:center;gap:14px">
+          <div style="width:40px;height:40px;border-radius:50%;background:var(--gold-bg);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:14px;font-weight:700;color:var(--gold);flex-shrink:0">${initials(t.name)}</div>
+          <div>
+            <div class="pay-month">${t.name}</div>
+            <div class="pay-date">📍 ${t.property}</div>
+          </div>
+        </div>
+        <div style="text-align:center">
+          <span class="pay-badge ${payClass}">${lastPay.status.charAt(0).toUpperCase()+lastPay.status.slice(1)}</span>
+          <div style="font-size:11px;color:var(--ink3);margin-top:4px">${lastPay.date}</div>
+        </div>
+        <div class="pay-amount">${fmt(t.rent)}</div>
+        ${lastPay.status==='pending'?`<button class="btn btn-outline btn-sm" onclick="alert('Reminder sent to ${t.name}!')">Send Reminder</button>`:'<div></div>'}
+      </div>`;
+    }).join('')}`;
+}
+
+function renderVacating() {
+  const el = document.getElementById('vacating-content');
+  const vacating = state.tenants.filter(t=>t.status==='vacating');
+  if (!vacating.length) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">🏠</div><div class="empty-title">No tenants vacating</div><div style="font-size:13px;margin-top:8px">All tenants are on active leases.</div></div>`;
+    return;
+  }
+  el.innerHTML = vacating.map(t => `
+    <div class="renewal-card" style="margin-bottom:12px">
+      <div>
+        <div class="rc-name">${t.name}</div>
+        <div class="rc-prop">📍 ${t.property} · Deposit: ${fmt(t.deposit)}</div>
+        <div style="font-size:12px;color:var(--ink3);margin-top:4px">Lease ends: ${t.leaseEnd}</div>
+      </div>
+      <button class="btn btn-gold btn-sm">Initiate Refund</button>
+    </div>`).join('');
+}
+
+function openDetail(id) {
+  const t = state.tenants.find(x=>x.id===id);
+  if (!t) return;
+  state.openDetailId = id;
+
+  document.getElementById('dp-head').innerHTML = `
+    <div style="display:flex;align-items:center;gap:16px;flex:1">
+      <div class="dp-avatar">${initials(t.name)}</div>
+      <div>
+        <div class="dp-name">${t.name}</div>
+        <div class="dp-prop">📍 ${t.property}</div>
+        <span class="status-pill ${statusClass(t.status)}" style="margin-top:6px;display:inline-flex">${statusLabel(t.status)}</span>
+      </div>
+    </div>
+    <button class="dp-close" onclick="closeDetail()">✕</button>`;
+
+  document.getElementById('dp-tabs').innerHTML = ['Overview','Payments','Documents'].map((tab,i) =>
+    `<div class="dp-tab ${i===0?'active':''}" onclick="switchTab(${id},'${tab}',this)">${tab}</div>`).join('');
+
+  renderDetailTab(t, 'Overview');
+  document.getElementById('detail-overlay').classList.add('open');
+}
+
+function switchTab(id, tab, el) {
+  document.querySelectorAll('.dp-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  const t = state.tenants.find(x=>x.id===id);
+  renderDetailTab(t, tab);
+}
+
+function renderDetailTab(t, tab) {
+  const body = document.getElementById('dp-body');
+  const prog = leaseProgress(t.leaseStart, t.leaseEnd);
+  const days = daysUntil(t.leaseEnd);
+
+  if (tab === 'Overview') {
+    body.innerHTML = `
+      <div class="lease-timeline">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+          <span style="font-size:12px;font-weight:600">Lease Progress</span>
+          <span style="font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:var(--green)">${prog}%</span>
+        </div>
+        <div class="lt-bar"><div class="lt-fill" style="width:${prog}%"></div></div>
+        <div class="lt-labels"><span>${t.leaseStart}</span><span>${days} days remaining</span><span>${t.leaseEnd}</span></div>
+      </div>
+
+      <div class="info-section">
+        <div class="info-section-title">Contact</div>
+        <div class="info-grid">
+          <div class="info-item"><label>Phone</label><div class="val">${t.phone}</div></div>
+          <div class="info-item"><label>Email</label><div class="val" style="font-size:12px;word-break:break-all">${t.email}</div></div>
+          <div class="info-item"><label>Occupation</label><div class="val">${t.occupation}</div></div>
+          <div class="info-item"><label>Due Date</label><div class="val">${t.dueDay} of month</div></div>
+        </div>
+      </div>
+
+      <div class="info-section">
+        <div class="info-section-title">Financials</div>
+        <div class="info-grid">
+          <div class="info-item"><label>Monthly Rent</label><div class="val" style="color:var(--green)">${fmt(t.rent)}</div></div>
+          <div class="info-item"><label>Security Deposit</label><div class="val">${fmt(t.deposit)}</div></div>
+          <div class="info-item"><label>Annual Rent</label><div class="val">${fmt(t.rent*12)}</div></div>
+          <div class="info-item"><label>Total Collected</label><div class="val">${fmt(t.payments.filter(p=>p.status!=='pending').reduce((s,p)=>s+p.amount,0))}</div></div>
+        </div>
+      </div>
+
+      <div class="info-section">
+        <div class="info-section-title">Emergency Contact</div>
+        <div class="info-grid">
+          <div class="info-item"><label>Name</label><div class="val">${t.ec.name}</div></div>
+          <div class="info-item"><label>Phone</label><div class="val">${t.ec.phone}</div></div>
+        </div>
+      </div>
+
+      ${t.notes ? `<div class="info-section">
+        <div class="info-section-title">Notes</div>
+        <div style="font-size:13px;color:var(--ink2);background:var(--bg);padding:12px 14px;border-radius:8px;line-height:1.6">${t.notes}</div>
+      </div>` : ''}
+
+      <div style="display:flex;gap:10px;margin-top:4px">
+        <button class="btn btn-outline" style="flex:1" onclick="openEditTenant(${t.id});closeDetail()">Edit Tenant</button>
+        <button class="btn btn-gold" style="flex:1" onclick="alert('Reminder sent to ${t.name}!')">Send Reminder</button>
+      </div>`;
+  }
+
+  if (tab === 'Payments') {
+    const payClass = {paid:'p-paid',late:'p-late',pending:'p-pending'};
+    body.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div>
+          <div style="font-size:13px;font-weight:500">Payment History</div>
+          <div style="font-size:12px;color:var(--ink3);margin-top:2px">Last 6 months</div>
+        </div>
+        <button class="btn btn-gold btn-sm" onclick="alert('Receipt sent!')">Send Receipt</button>
+      </div>
+      ${t.payments.map(p => `
+        <div class="payment-row">
+          <div>
+            <div class="pay-month">${p.month}</div>
+            <div class="pay-date">${p.date}</div>
+          </div>
+          <span class="pay-badge ${payClass[p.status]||'p-pending'}">${p.status.charAt(0).toUpperCase()+p.status.slice(1)}</span>
+          <div class="pay-amount" style="font-size:15px">${fmt(p.amount)}</div>
+        </div>`).join('')}
+      <div style="margin-top:18px;padding:16px;background:var(--bg);border-radius:10px">
+        <div style="display:flex;justify-content:space-between;font-size:13px">
+          <span style="color:var(--ink3)">On-time payments</span>
+          <span style="font-weight:600;color:var(--green)">${t.payments.filter(p=>p.status==='paid').length} / ${t.payments.length}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;margin-top:8px">
+          <span style="color:var(--ink3)">Total collected (6mo)</span>
+          <span style="font-weight:600">${fmt(t.payments.filter(p=>p.status!=='pending').reduce((s,p)=>s+p.amount,0))}</span>
+        </div>
+      </div>`;
+  }
+
+  if (tab === 'Documents') {
+    body.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div style="font-size:13px;font-weight:500">${t.docs.length} document${t.docs.length!==1?'s':''}</div>
+        <button class="btn btn-gold btn-sm" onclick="alert('Upload feature coming soon!')">+ Upload</button>
+      </div>
+      ${t.docs.map(d => `
+        <div class="doc-item">
+          <div class="doc-icon" style="background:var(--gold-bg)">${d.type}</div>
+          <div>
+            <div class="doc-name">${d.name}</div>
+            <div class="doc-meta">${d.size} · Uploaded ${d.date}</div>
+          </div>
+          <span class="doc-dl" onclick="alert('Download: ${d.name}')">⬇ Download</span>
+        </div>`).join('')}
+      <div style="margin-top:16px;padding:14px;border:1px dashed var(--border2);border-radius:10px;text-align:center;color:var(--ink3);font-size:13px;cursor:pointer" onclick="alert('Upload feature coming soon!')">
+        + Drop documents here or click to upload
+      </div>`;
+  }
+}
+
+function closeDetail(e) {
+  if (e && !e.target.classList.contains('detail-overlay')) return;
+  document.getElementById('detail-overlay').classList.remove('open');
+}
+
+function openAddTenant() {
+  state.editId = null;
+  document.getElementById('modal-title').textContent = 'Add New Tenant';
+  document.getElementById('modal-sub').textContent = 'Fill in the tenant and lease details';
+  ['f-name','f-phone','f-email','f-occ','f-rent','f-deposit','f-ec-name','f-ec-phone','f-notes'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.value = '';
+  });
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function openEditTenant(id) {
+  const t = state.tenants.find(x=>x.id===id);
+  if (!t) return;
+  state.editId = id;
+  document.getElementById('modal-title').textContent = 'Edit Tenant';
+  document.getElementById('modal-sub').textContent = `Editing lease for ${t.name}`;
+  document.getElementById('f-name').value = t.name;
+  document.getElementById('f-phone').value = t.phone;
+  document.getElementById('f-email').value = t.email;
+  document.getElementById('f-occ').value = t.occupation;
+  document.getElementById('f-rent').value = t.rent;
+  document.getElementById('f-deposit').value = t.deposit;
+  document.getElementById('f-start').value = t.leaseStart;
+  document.getElementById('f-end').value = t.leaseEnd;
+  document.getElementById('f-ec-name').value = t.ec.name;
+  document.getElementById('f-ec-phone').value = t.ec.phone;
+  document.getElementById('f-notes').value = t.notes;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function saveTenant() {
+  const data = {
+    name: document.getElementById('f-name').value || 'New Tenant',
+    phone: document.getElementById('f-phone').value || '',
+    email: document.getElementById('f-email').value || '',
+    occupation: document.getElementById('f-occ').value || '',
+    property: document.getElementById('f-prop').value,
+    rent: +document.getElementById('f-rent').value || 0,
+    deposit: +document.getElementById('f-deposit').value || 0,
+    leaseStart: document.getElementById('f-start').value || '2026-01-01',
+    leaseEnd: document.getElementById('f-end').value || '2027-01-01',
+    dueDay: document.getElementById('f-due').value,
+    ec: { name: document.getElementById('f-ec-name').value||'', phone: document.getElementById('f-ec-phone').value||'' },
+    notes: document.getElementById('f-notes').value || '',
+    status: 'active',
+    payments: [],
+    docs: []
+  };
+
+  if (state.editId) {
+    const idx = state.tenants.findIndex(t=>t.id===state.editId);
+    state.tenants[idx] = { ...state.tenants[idx], ...data };
+  } else {
+    data.id = Date.now();
+    state.tenants.push(data);
+  }
+
+  closeModal();
+  renderAll();
+}
+
+function closeModal(e) {
+  if (e && !e.target.classList.contains('modal-overlay')) return;
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+
+function setFilter(f, el) {
+  state.filter = f;
+  document.querySelectorAll('.filter-pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  renderTenants();
+}
+
+function filterByProp(prop) {
+  document.getElementById('search-input').value = prop === 'all' ? '' : prop;
+  renderTenants();
+}
+
+function showPage(id, el) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('visible'));
+  document.getElementById('page-'+id).classList.add('visible');
+  document.querySelectorAll('.sb-item').forEach(s=>s.classList.remove('active'));
+  if (el) el.classList.add('active');
+
+  if (id==='renewals') renderRenewals();
+  if (id==='payments') renderPayments();
+  if (id==='vacating') renderVacating();
+}
+
+function renderAll() {
+  renderStats();
+  renderTenants();
+}
+
+renderAll();
+</script>
+</body>
+</html>
